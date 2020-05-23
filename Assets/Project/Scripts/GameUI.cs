@@ -2,7 +2,12 @@
 using UnityEngine.UI;
 
 public class GameUI : MonoBehaviour {
+    private GameObject loadingGameObject;
+    public ShopManager shopManager;
+
     void Start () {
+        loadingGameObject = transform.Find ("LoadingGameObject").gameObject;
+
         RectTransform itemsCategoryScrollRect = transform.Find ("ShopPanel/ItemsCategoryScrollView").GetComponent<RectTransform> ();
         RectTransform itemsScrollRect = transform.Find ("ShopPanel/ItemsScrollView").GetComponent<RectTransform> ();
 
@@ -18,7 +23,8 @@ public class GameUI : MonoBehaviour {
             ResetScrollPosition (itemsCategoryScrollRect);
             ResetScrollPosition (itemsScrollRect);
             ShowPanel (shopPanel, true);
-            FindObjectOfType<ShopManager> ().InitShopItems (0);
+
+            shopManager.InitShopItems (shopManager.categories[0]);
 
         });
         openInventoryButton.onClick.AddListener (() => {
@@ -46,5 +52,12 @@ public class GameUI : MonoBehaviour {
 
         contentRect.localPosition = new Vector3 (contentRect.localPosition.x, 0, contentRect.localPosition.z);
         scrollRect.verticalScrollbar.value = scrollValue;
+    }
+    public void ShowLoadingIndicator (bool isShow) {
+        if (isShow)
+            loadingGameObject.SetActive (true);
+        else
+            loadingGameObject.SetActive (false);
+
     }
 }

@@ -29,10 +29,10 @@ public class ItemsManager : MonoBehaviour {
         JsonUtility.FromJsonOverwrite (json, items);
     }
 
-    public CurrentItem[] GetItems (int category) {
+    public CurrentItem[] GetItems (string category) {
         CurrentItem[] currentItems = null;
         switch (category) {
-            case 0:
+            case "baits":
                 {
                     currentItems = new CurrentItem[items.baits.Length];
                     for (int i = 0; i < currentItems.Length; i++) {
@@ -44,7 +44,7 @@ public class ItemsManager : MonoBehaviour {
                     }
                 }
                 break;
-            case 1:
+            case "rods":
                 {
                     currentItems = new CurrentItem[items.rods.Length];
                     for (int i = 0; i < currentItems.Length; i++) {
@@ -56,7 +56,7 @@ public class ItemsManager : MonoBehaviour {
                     }
                 }
                 break;
-            case 2:
+            case "spinnings":
                 {
                     currentItems = new CurrentItem[items.spinnings.Length];
                     for (int i = 0; i < currentItems.Length; i++) {
@@ -68,7 +68,7 @@ public class ItemsManager : MonoBehaviour {
                     }
                 }
                 break;
-            case 3:
+            case "feeders":
                 {
                     currentItems = new CurrentItem[items.feeders.Length];
                     for (int i = 0; i < currentItems.Length; i++) {
@@ -80,7 +80,7 @@ public class ItemsManager : MonoBehaviour {
                     }
                 }
                 break;
-            case 4:
+            case "reels":
                 {
                     currentItems = new CurrentItem[items.reels.Length];
                     for (int i = 0; i < currentItems.Length; i++) {
@@ -92,7 +92,7 @@ public class ItemsManager : MonoBehaviour {
                     }
                 }
                 break;
-            case 5:
+            case "lines":
                 {
                     currentItems = new CurrentItem[items.lines.Length];
                     for (int i = 0; i < currentItems.Length; i++) {
@@ -108,35 +108,35 @@ public class ItemsManager : MonoBehaviour {
         return currentItems;
     }
 
-    public Sprite[] GetImages (int category) {
+    public Sprite[] GetImages (string category) {
         Sprite[] sprites = null;
         switch (category) {
-            case 0:
+            case "baits":
                 {
                     sprites = baitsSprite;
                 }
                 break;
-            case 1:
+            case "rods":
                 {
                     sprites = rodsSprite;
                 }
                 break;
-            case 2:
+            case "spinnings":
                 {
                     sprites = spinningsSprite;
                 }
                 break;
-            case 3:
+            case "feeders":
                 {
                     sprites = feedersSprite;
                 }
                 break;
-            case 4:
+            case "reels":
                 {
                     sprites = reelsSprite;
                 }
                 break;
-            case 5:
+            case "lines":
                 {
                     sprites = linesSprite;
                 }

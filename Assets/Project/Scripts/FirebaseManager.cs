@@ -91,7 +91,7 @@ public class FirebaseManager : MonoBehaviour {
 
                 //Загрузка данных игрока
                 data["text"] = "getUserData";
-                getData (data)
+                FirebaseRequest (data, "getData")
                     .ContinueWith ((task) => {
                         UserManager.instance.DataParse (task.Result);
                         isLoading[0] = false;
@@ -99,7 +99,7 @@ public class FirebaseManager : MonoBehaviour {
 
                 //Загрузка данных предметов
                 data["text"] = "getItemsData";
-                getData (data)
+                FirebaseRequest (data, "getData")
                     .ContinueWith ((task) => {
                         ItemsManager.instance.DataParse(task.Result);
                         isLoading[1] = false;
@@ -166,9 +166,9 @@ public class FirebaseManager : MonoBehaviour {
             });
     }
 
-    public Task<string> getData (Dictionary<string, object> data) {
+    public Task<string> FirebaseRequest (Dictionary<string, object> data, string functionName) {
 
-        var function = functions.GetHttpsCallable ("getData");
+        var function = functions.GetHttpsCallable (functionName);
 
         return function.CallAsync (data)
             .ContinueWith (task => {

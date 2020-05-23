@@ -3,12 +3,14 @@ using UnityEngine.UI;
 
 public class ShopManager : MonoBehaviour {
     public string[] categoriesName = new string[] { "Наживки", "Удочки", "Спиннинги", "Донки", "Катушки", "Лески", "Снаряжение" };
-
+    public string[] categories = new string[] { "baits", "rods", "spinnings", "feeders", "reels", "lines", "equipments" };
     public GameObject shopItemPrefab;
     public GameObject categoryButtonPrefab;
 
     private Transform categoryButtonContainer;
     private Transform shopItemContainer;
+
+    private bool isLoading;
 
     void Start () {
         categoryButtonContainer = gameObject.transform.Find ("ItemsCategoryScrollView/Viewport/Content");
@@ -39,12 +41,12 @@ public class ShopManager : MonoBehaviour {
         view.nameText.text = model.name;
         view.button.onClick.AddListener (() => {
             {
-                InitShopItems (model.id);
+                InitShopItems (categories[model.id]);
             }
         });
     }
 
-    public void InitShopItems (int category) {
+    public void InitShopItems (string category) {
         shopItemContainer = gameObject.transform.Find ("ItemsScrollView/Viewport/Content");
 
         //Очистка контейнера с предметы перед новым заполнением
@@ -67,7 +69,7 @@ public class ShopManager : MonoBehaviour {
         }
 
     }
-    private void InitializeShopItemView (GameObject newButton, CurrentItem item, Sprite sprite, int category) {
+    private void InitializeShopItemView (GameObject newButton, CurrentItem item, Sprite sprite, string category) {
         ShopItemView view = new ShopItemView (newButton.transform);
         view.priceText.text = item.price.ToString ();
         view.infoText.text = SetViewText (category, item);
@@ -78,16 +80,16 @@ public class ShopManager : MonoBehaviour {
 
         view.buyButton.onClick.AddListener (() => {
             {
-                print (item.id);
+                TryBuyItem (item.id, category);
             }
         });
     }
 
     //Изменение размера и поворота image у предмета в магазине, если это удилище
-    private Image ImageRecize (Image target, int category) {
+    private Image ImageRecize (Image target, string category) {
         Image image = null;
 
-        if (category == 1 || category == 2 || category == 3) {
+        if (category == "rods" || category == "spinnings" || category == "feeders") {
             var rect = target.GetComponent<RectTransform> ();
 
             rect.sizeDelta = new Vector2 (rect.sizeDelta.x * 0.2f, rect.sizeDelta.y * 1.2f);
@@ -98,16 +100,16 @@ public class ShopManager : MonoBehaviour {
     }
 
     //Выбор строки информации о предмете
-    private string SetViewText (int category, CurrentItem item) {
+    private string SetViewText (string category, CurrentItem item) {
         string s = "";
 
         switch (category) {
-            case 0:
+            case "baits":
                 {
                     s = item.count + " шт";
                 }
                 break;
-            case 4:
+            case "reels":
                 {
                     s = item.reelingSpeed + " ск.вр";
                 }
@@ -121,6 +123,33 @@ public class ShopManager : MonoBehaviour {
 
         return s;
     }
+
+    private void TryBuyItem (int id, string category) {
+        StartCoroutine (Loading ());
+
+        System.Collections.Generic.Dictionary<string, object> data = new System.Collections.Generic.Dictionary<string, object> ();
+
+        data["key"] = category;
+        data["id"] = id;
+
+        FirebaseManager.instance.FirebaseRequest (data, "tryBuyItem")
+            .ContinueWith ((task) => {
+                isLoading = false;
+            });
+    }
+
+    private System.Collections.IEnumerator Loading () {
+        Debug.Log ("Coroutine start");
+        isLoading = true;
+        FindObjectOfType<GameUI> ().ShowLoadingIndicator (true);
+        while (isLoading) {
+            yield return null;
+        }
+        FindObjectOfType<GameUI> ().ShowLoadingIndicator (false);
+
+        Debug.Log ("Coroutine stop");
+    }
+
 }
 
 public class ShopItemView {
