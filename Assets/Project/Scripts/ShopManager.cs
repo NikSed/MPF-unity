@@ -12,13 +12,27 @@ public class ShopManager : MonoBehaviour {
 
     private bool isLoading;
     private int[] userItems;
+    private Sprite[] currentItemsImages;
 
     void Start () {
+
+    }
+
+    //Метод выводит категорию предметов при открытии окна магазина
+    public void OnOpenShopPanel () {
         categoryButtonContainer = gameObject.transform.Find ("ItemsCategoryScrollView/Viewport/Content");
         shopItemContainer = gameObject.transform.Find ("ItemsScrollView/Viewport/Content");
-
         InitCategoryButtons ();
+        categoryButtonContainer.transform.GetChild (0).GetComponent<Button> ().interactable = false;
         InitShopItems ("baits");
+    }
+    public void OnCloseShopPanel () {
+        foreach (Transform t in categoryButtonContainer) {
+            Destroy (t.gameObject);
+        }
+        foreach (Transform obj in shopItemContainer) {
+            Destroy (obj.gameObject);
+        }
     }
 
     private void InitCategoryButtons () {
@@ -44,43 +58,47 @@ public class ShopManager : MonoBehaviour {
         view.nameText.text = model.name;
         view.button.onClick.AddListener (() => {
             {
+                foreach (Transform t in categoryButtonContainer) {
+                    t.GetComponent<Button> ().interactable = true;
+                    view.button.interactable = false;
+                }
                 InitShopItems (categories[model.id]);
             }
         });
     }
 
     public void InitShopItems (string category) {
-
-        //Очистка контейнера с предметы перед новым заполнением
+        //Очистка контейнера с предметами
         foreach (Transform obj in shopItemContainer) {
             Destroy (obj.gameObject);
         }
-
         //Получаем данные предметов единого типа для упрощенного взаимодействия 
         var currentItems = ItemsManager.instance.GetItems (category);
 
         userItems = UserManager.instance.GetItems (category);
 
         //Получаем нужные спрайты для выбранных предметов
-        var currentItemsImages = ItemsManager.instance.GetImages (category);
+        currentItemsImages = ItemsManager.instance.GetImages (category);
 
         //Визуальная инициализация предмета на сцену
         for (int i = 0; i < currentItems.Length; i++) {
             GameObject newShopItem = Instantiate (shopItemPrefab);
             newShopItem.transform.localScale = transform.root.localScale;
             newShopItem.transform.SetParent (shopItemContainer);
-            InitializeShopItemView (newShopItem, currentItems[i], currentItemsImages[i], category);
+            InitializeShopItemView (newShopItem, currentItems[i], category);
         }
 
     }
-    private void InitializeShopItemView (GameObject newButton, CurrentItem item, Sprite sprite, string category) {
+    private void InitializeShopItemView (GameObject newButton, CurrentItem item, string category) {
 
         ShopItemView view = new ShopItemView (newButton.transform);
         view.infoText.text = SetViewText (category, item);
         view.nameText.text = item.name;
 
-        view.itemImage.sprite = sprite;
-        ImageRecize (view.itemImage, category);
+        if (currentItemsImages.Length > item.id) {
+            view.itemImage.sprite = currentItemsImages[item.id];
+            ImageRecize (view.itemImage, category);
+        }
 
         if (category != "baits") {
             int pos = System.Array.IndexOf (userItems, item.id);

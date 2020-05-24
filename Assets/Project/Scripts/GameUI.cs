@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 public class GameUI : MonoBehaviour {
     private GameObject loadingGameObject;
-    public ShopManager shopManager;
+    //public ShopManager shopManager;
 
     void Start () {
         loadingGameObject = transform.Find ("LoadingGameObject").gameObject;
@@ -20,17 +20,18 @@ public class GameUI : MonoBehaviour {
         GameObject inventoryPanel = transform.Find ("InventoryPanel").gameObject;
 
         openShopButton.onClick.AddListener (() => {
+            ShowPanel (shopPanel, true);
+            FindObjectOfType<Water2DScript> ().gameObject.GetComponent<SpriteRenderer> ().enabled = false;
             ResetScrollPosition (itemsCategoryScrollRect);
             ResetScrollPosition (itemsScrollRect);
-            ShowPanel (shopPanel, true);
-
-            //shopManager.InitShopItems (shopManager.categories[0]);
-
+            FindObjectOfType<ShopManager>().OnOpenShopPanel ();
         });
         openInventoryButton.onClick.AddListener (() => {
             ShowPanel (inventoryPanel, true);
         });
         closeShopButton.onClick.AddListener (() => {
+            FindObjectOfType<Water2DScript> ().gameObject.GetComponent<SpriteRenderer> ().enabled = true;
+            FindObjectOfType<ShopManager>().OnCloseShopPanel ();
             ShowPanel (shopPanel, false);
         });
         closeInventoryButton.onClick.AddListener (() => {
