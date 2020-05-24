@@ -24,7 +24,7 @@ public class GameUI : MonoBehaviour {
             ResetScrollPosition (itemsScrollRect);
             ShowPanel (shopPanel, true);
 
-            shopManager.InitShopItems (shopManager.categories[0]);
+            //shopManager.InitShopItems (shopManager.categories[0]);
 
         });
         openInventoryButton.onClick.AddListener (() => {

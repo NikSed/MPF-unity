@@ -19,4 +19,37 @@ public class UserManager : MonoBehaviour {
         JsonUtility.FromJsonOverwrite (json, user);
     }
 
+    public int[] GetItems (string category) {
+        int[] array = null;
+        switch (category) {
+            case "rods":
+                {
+                    array = user.rodsID;
+                }
+                break;
+            case "spinnings":
+                {
+                    array = user.spinningsID;
+                }
+                break;
+            case "feeders":
+                {
+                    array = user.feedersID;
+                }
+                break;
+            case "reels":
+                {
+                    array = user.reelsID;
+                }
+                break;
+            case "lines":
+                {
+                    array = user.linesID;
+                }
+                break;
+        }
+
+        return array;
+    }
+
 }

@@ -11,11 +11,14 @@ public class ShopManager : MonoBehaviour {
     private Transform shopItemContainer;
 
     private bool isLoading;
+    private int[] userItems;
 
     void Start () {
         categoryButtonContainer = gameObject.transform.Find ("ItemsCategoryScrollView/Viewport/Content");
+        shopItemContainer = gameObject.transform.Find ("ItemsScrollView/Viewport/Content");
 
         InitCategoryButtons ();
+        InitShopItems ("baits");
     }
 
     private void InitCategoryButtons () {
@@ -47,7 +50,6 @@ public class ShopManager : MonoBehaviour {
     }
 
     public void InitShopItems (string category) {
-        shopItemContainer = gameObject.transform.Find ("ItemsScrollView/Viewport/Content");
 
         //Очистка контейнера с предметы перед новым заполнением
         foreach (Transform obj in shopItemContainer) {
@@ -56,6 +58,8 @@ public class ShopManager : MonoBehaviour {
 
         //Получаем данные предметов единого типа для упрощенного взаимодействия 
         var currentItems = ItemsManager.instance.GetItems (category);
+
+        userItems = UserManager.instance.GetItems (category);
 
         //Получаем нужные спрайты для выбранных предметов
         var currentItemsImages = ItemsManager.instance.GetImages (category);
@@ -70,19 +74,36 @@ public class ShopManager : MonoBehaviour {
 
     }
     private void InitializeShopItemView (GameObject newButton, CurrentItem item, Sprite sprite, string category) {
+
         ShopItemView view = new ShopItemView (newButton.transform);
-        view.priceText.text = item.price.ToString ();
         view.infoText.text = SetViewText (category, item);
         view.nameText.text = item.name;
 
         view.itemImage.sprite = sprite;
         ImageRecize (view.itemImage, category);
 
-        view.buyButton.onClick.AddListener (() => {
-            {
-                TryBuyItem (item.id, category);
+        if (category != "baits") {
+            int pos = System.Array.IndexOf (userItems, item.id);
+
+            if (pos > -1) {
+                view.buyButton.interactable = false;
+                view.priceText.text = "Куплено";
+            } else {
+                view.priceText.text = item.price.ToString ();
+                view.buyButton.onClick.AddListener (() => {
+                    {
+                        TryBuyItem (item.id, category);
+                    }
+                });
             }
-        });
+        } else {
+            view.priceText.text = item.price.ToString ();
+            view.buyButton.onClick.AddListener (() => {
+                {
+                    TryBuyItem (item.id, category);
+                }
+            });
+        }
     }
 
     //Изменение размера и поворота image у предмета в магазине, если это удилище
@@ -125,7 +146,7 @@ public class ShopManager : MonoBehaviour {
     }
 
     private void TryBuyItem (int id, string category) {
-        StartCoroutine (Loading ());
+        StartCoroutine (Loading (category));
 
         System.Collections.Generic.Dictionary<string, object> data = new System.Collections.Generic.Dictionary<string, object> ();
 
@@ -135,15 +156,24 @@ public class ShopManager : MonoBehaviour {
         FirebaseManager.instance.FirebaseRequest (data, "tryBuyItem")
             .ContinueWith ((task) => {
                 isLoading = false;
+
+                string s = task.Result;
+                if (s != "false" && s != null) {
+                    UserManager.instance.DataParse (s);
+                }
+
             });
     }
 
-    private System.Collections.IEnumerator Loading () {
+    private System.Collections.IEnumerator Loading (string category) {
         Debug.Log ("Coroutine start");
         isLoading = true;
         FindObjectOfType<GameUI> ().ShowLoadingIndicator (true);
         while (isLoading) {
             yield return null;
+        }
+        if (category != "baits") {
+            InitShopItems (category);
         }
         FindObjectOfType<GameUI> ().ShowLoadingIndicator (false);
 
