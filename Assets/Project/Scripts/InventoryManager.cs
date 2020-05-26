@@ -3,13 +3,27 @@ using UnityEngine.UI;
 
 public class InventoryManager : MonoBehaviour {
     public GameObject inventorySlotPrefab;
+    public GameObject inventoryItemPrefab;
     private Transform inventorySlotContainer;
+    private Transform inventoryItemtemContainer;
+    private int[] userItems;
+    private Sprite[] currentItemsImages;
+    private int currentSlotID = 0;
 
     public void OnOpenInventory () {
         InitInventorySlots ();
     }
     public void OnCloseInventory () {
         foreach (Transform t in inventorySlotContainer) {
+            Destroy (t.gameObject);
+        }
+    }
+
+    public void OnOpenItems (int itemCategoryID) {
+        InitItems (itemCategoryID);
+    }
+    public void OnCloseItems () {
+        foreach (Transform t in inventoryItemtemContainer) {
             Destroy (t.gameObject);
         }
     }
@@ -56,29 +70,31 @@ public class InventoryManager : MonoBehaviour {
             InitializeSlotView (newSlot, slots[i], userSlots[i]);
         }
     }
-
     private void InitializeSlotView (GameObject newSlot, InventorySlot slot, UserSlot userSlot) {
         InventorySlotView view = new InventorySlotView (newSlot.transform);
 
-        view.slotText.text = "СЛОТ " + (slot.id + 1);
-
-        SetButtonImage (view, userSlot, slot.id);
+        SetSlotImages (view, userSlot, slot.id);
+        SetSlotTexts (view, userSlot, slot.id);
 
         view.rodButton.onClick.AddListener (() => {
-            Debug.Log (slot.rodID);
+            currentSlotID = slot.id;
+            FindObjectOfType<GameUI> ().OpenItemsPanel (slot.rodID);
         });
         view.baitButton.onClick.AddListener (() => {
-            Debug.Log (slot.baitID);
+            currentSlotID = slot.id;
+            FindObjectOfType<GameUI> ().OpenItemsPanel (slot.baitID);
         });
         view.reelButton.onClick.AddListener (() => {
-            Debug.Log (slot.reelID);
+            currentSlotID = slot.id;
+
+            FindObjectOfType<GameUI> ().OpenItemsPanel (slot.reelID);
         });
         view.lineButton.onClick.AddListener (() => {
-            Debug.Log (slot.lineID);
+            currentSlotID = slot.id;
+            FindObjectOfType<GameUI> ().OpenItemsPanel (slot.lineID);
         });
     }
-
-    private void SetButtonImage (InventorySlotView view, UserSlot userSlot, int slotID) {
+    private void SetSlotImages (InventorySlotView view, UserSlot userSlot, int slotID) {
         if (userSlot.rodID > -1) {
             switch (slotID) {
                 case 0:
@@ -115,14 +131,253 @@ public class InventoryManager : MonoBehaviour {
         }
 
     }
+    private void SetSlotTexts (InventorySlotView view, UserSlot userSlot, int slotID) {
+        if (userSlot.rodID > -1) {
+            switch (slotID) {
+                case 0:
+                    {
+                        view.rodInfoText.text = ItemsManager.instance.items.rods[userSlot.rodID].maxWeight.ToString () + " кг";
+                    }
+                    break;
+                case 1:
+                    {
+                        view.rodInfoText.text = ItemsManager.instance.items.spinnings[userSlot.rodID].maxWeight.ToString () + " кг";
+                    }
+                    break;
+                case 2:
+                    {
+                        view.rodInfoText.text = ItemsManager.instance.items.feeders[userSlot.rodID].maxWeight.ToString () + " кг";
+                    }
+                    break;
+            }
 
+            view.rodInfoText.gameObject.SetActive (true);
+        }
+
+        if (userSlot.baitID > -1) {
+            view.baitInfoText.text = ItemsManager.instance.items.baits[userSlot.baitID].count.ToString () + " шт";
+            view.baitInfoText.gameObject.SetActive (true);
+        }
+        if (userSlot.reelID > -1) {
+            view.reelInfoText.text = ItemsManager.instance.items.reels[userSlot.reelID].reelingSpeed.ToString () + " ск. вр";
+            view.reelInfoText.gameObject.SetActive (true);
+        }
+        if (userSlot.lineID > -1) {
+            view.lineInfoText.text = ItemsManager.instance.items.lines[userSlot.lineID].maxWeight.ToString () + " кг";
+            view.lineInfoText.gameObject.SetActive (true);
+        }
+
+        view.slotText.text = "СЛОТ " + (slotID + 1);
+    }
+
+    private void InitItems (int itemCategoryID) {
+        inventoryItemtemContainer = transform.Find ("ItemsPanel/ItemsScrollView/Viewport/Content");
+        string category = ItemsManager.instance.categories[itemCategoryID];
+
+        var currentItems = ItemsManager.instance.GetItems (category);
+
+        userItems = UserManager.instance.GetItems (category);
+
+        //Получаем нужные спрайты для выбранных предметов
+        currentItemsImages = ItemsManager.instance.GetImages (category);
+
+        for (int i = 0; i < currentItems.Length; i++) {
+            if (!ItemContainInAnotherSlots (currentItems[i].id, category)) {
+                int pos = System.Array.IndexOf (userItems, currentItems[i].id);
+
+                if (pos > -1) {
+                    GameObject newInventoryItem = Instantiate (inventoryItemPrefab);
+                    newInventoryItem.transform.localScale = transform.root.localScale;
+                    newInventoryItem.transform.SetParent (inventoryItemtemContainer);
+                    InitializeInventoryItemView (newInventoryItem, currentItems[i], category);
+                }
+            }
+
+        }
+    }
+
+    private void InitializeInventoryItemView (GameObject newInventoryItem, CurrentItem item, string category) {
+        InventoryItemView view = new InventoryItemView (newInventoryItem.transform);
+
+        view.infoText.text = SetViewInfoText (category, item);
+        view.nameText.text = item.name;
+        view.buttonText.text = SetItemButtonText (category, item.id);
+
+        if (currentItemsImages.Length > item.id) {
+            view.itemImage.sprite = currentItemsImages[item.id];
+            RodImageRecize (view.itemImage, category);
+        }
+
+        view.selectButton.onClick.AddListener (() => {
+            OnSelectItem (item.id, category);
+        });
+
+    }
+
+    private void OnSelectItem (int itemID, string category) {
+        var userSlots = UserManager.instance.user.slots;
+
+        switch (category) {
+            case "baits":
+                {
+                    if (userSlots[currentSlotID].baitID == itemID) {
+                        userSlots[currentSlotID].baitID = -1;
+                    } else {
+                        userSlots[currentSlotID].baitID = itemID;
+                    }
+                }
+                break;
+            case "rods":
+                {
+                    if (userSlots[currentSlotID].rodID == itemID) {
+                        userSlots[currentSlotID].rodID = -1;
+                    } else {
+                        userSlots[currentSlotID].rodID = itemID;
+                    }
+                }
+                break;
+            case "reels":
+                {
+                    if (userSlots[currentSlotID].reelID == itemID) {
+                        userSlots[currentSlotID].reelID = -1;
+                    } else {
+                        userSlots[currentSlotID].reelID = itemID;
+                    }
+                }
+                break;
+            case "lines":
+                {
+                    if (userSlots[currentSlotID].lineID == itemID) {
+                        userSlots[currentSlotID].lineID = -1;
+                    } else {
+                        userSlots[currentSlotID].lineID = itemID;
+                    }
+                }
+                break;
+        }
+
+        foreach (Transform t in inventoryItemtemContainer) {
+            Destroy (t.gameObject);
+        }
+
+        int index = System.Array.IndexOf (ItemsManager.instance.categories, category);
+
+        InitItems (index);
+
+        foreach (Transform t in inventorySlotContainer) {
+            Destroy (t.gameObject);
+        }
+
+        InitInventorySlots ();
+    }
+
+    private bool ItemContainInAnotherSlots (int itemID, string category) {
+        bool isContain = false;
+        var slots = UserManager.instance.user.slots;
+
+        switch (category) {
+            case "rods":
+                {
+                    for (int i = 0; i < slots.Length; i++) {
+                        if (i == currentSlotID) continue;
+                        if (slots[i].rodID == itemID) return isContain = true;
+                    }
+                }
+                break;
+            case "reels":
+                {
+                    for (int i = 0; i < slots.Length; i++) {
+                        if (i == currentSlotID) continue;
+                        if (slots[i].reelID == itemID) return isContain = true;
+                    }
+                }
+                break;
+            case "lines":
+                {
+                    for (int i = 0; i < slots.Length; i++) {
+                        if (i == currentSlotID) continue;
+                        if (slots[i].lineID == itemID) return isContain = true;
+                    }
+                }
+                break;
+        }
+
+        return isContain;
+    }
+
+    private string SetItemButtonText (string category, int itemID) {
+        string s = "Выбрать";
+
+        switch (category) {
+            case "rods":
+                {
+                    if (UserManager.instance.user.slots[currentSlotID].rodID == itemID)
+                        s = "Снять";
+                }
+                break;
+            case "baits":
+                {
+                    if (UserManager.instance.user.slots[currentSlotID].baitID == itemID)
+                        s = "Снять";
+                }
+                break;
+            case "reels":
+                {
+                    if (UserManager.instance.user.slots[currentSlotID].reelID == itemID)
+                        s = "Снять";
+                }
+                break;
+            case "lines":
+                {
+                    if (UserManager.instance.user.slots[currentSlotID].lineID == itemID)
+                        s = "Снять";
+                }
+                break;
+        }
+
+        return s;
+    }
+    private string SetViewInfoText (string category, CurrentItem item) {
+        string s = "";
+
+        switch (category) {
+            case "baits":
+                {
+                    s = item.count + " шт";
+                }
+                break;
+            case "reels":
+                {
+                    s = item.reelingSpeed + " ск.вр";
+                }
+                break;
+            default:
+                {
+                    s = item.maxWeight + " кг";
+                }
+                break;
+        }
+
+        return s;
+    }
+    private Image RodImageRecize (Image target, string category) {
+        Image image = null;
+
+        if (category == "rods" || category == "spinnings" || category == "feeders") {
+            var rect = target.GetComponent<RectTransform> ();
+
+            rect.sizeDelta = new Vector2 (rect.sizeDelta.x * 0.2f, rect.sizeDelta.y * 1.2f);
+            rect.eulerAngles = new Vector3 (0, 0, -45f);
+        }
+
+        return image;
+    }
 }
 
 public class InventorySlotView {
     public Button rodButton, baitButton, reelButton, lineButton;
     public Image rodImage, baitImage, reelImage, lineImage;
-
-    public Text slotText;
+    public Text rodInfoText, baitInfoText, reelInfoText, lineInfoText, slotText;
 
     public InventorySlotView (Transform root) {
         rodButton = root.Find ("RodButton").GetComponent<Button> ();
@@ -135,6 +390,10 @@ public class InventorySlotView {
         reelImage = reelButton.transform.Find ("Image").GetComponent<Image> ();
         lineImage = lineButton.transform.Find ("Image").GetComponent<Image> ();
 
+        rodInfoText = root.Find ("RodInfoText").GetComponent<Text> ();
+        baitInfoText = root.Find ("BaitInfoText").GetComponent<Text> ();
+        reelInfoText = root.Find ("ReelInfoText").GetComponent<Text> ();
+        lineInfoText = root.Find ("LineInfoText").GetComponent<Text> ();
         slotText = root.Find ("SlotText").GetComponent<Text> ();
     }
 }
@@ -145,4 +404,20 @@ public class InventorySlot {
     public int reelID;
     public int lineID;
     public int id;
+}
+
+public class InventoryItemView {
+    public Image itemImage;
+    public Button selectButton;
+    public Text buttonText;
+    public Text infoText;
+    public Text nameText;
+
+    public InventoryItemView (Transform root) {
+        itemImage = root.Find ("ItemImage").GetComponent<Image> ();
+        selectButton = root.Find ("SelectButton").GetComponent<Button> ();
+        buttonText = selectButton.transform.Find ("Text").GetComponent<Text> ();
+        infoText = root.Find ("InfoText").GetComponent<Text> ();
+        nameText = root.Find ("NameText").GetComponent<Text> ();
+    }
 }

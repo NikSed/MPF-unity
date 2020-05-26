@@ -3,27 +3,34 @@ using UnityEngine.UI;
 
 public class GameUI : MonoBehaviour {
     private GameObject loadingGameObject;
-    //public ShopManager shopManager;
+    private GameObject itemsPanel;
 
     void Start () {
+        //Объект загрузки
         loadingGameObject = transform.Find ("LoadingGameObject").gameObject;
 
-        RectTransform itemsCategoryScrollRect = transform.Find ("ShopPanel/ItemsCategoryScrollView").GetComponent<RectTransform> ();
-        RectTransform itemsScrollRect = transform.Find ("ShopPanel/ItemsScrollView").GetComponent<RectTransform> ();
+        //Ректтрансформы скролов магазина и кнопок категорий
+        RectTransform shopItemsCategoryScrollRect = transform.Find ("ShopPanel/ItemsCategoryScrollView").GetComponent<RectTransform> ();
+        RectTransform shopItemsScrollRect = transform.Find ("ShopPanel/ItemsScrollView").GetComponent<RectTransform> ();
 
+        //Кнопки открытия/закрытия окон
         Button openShopButton = transform.Find ("OpenShopButton").GetComponent<Button> ();
         Button openInventoryButton = transform.Find ("OpenInventoryButton").GetComponent<Button> ();
         Button closeShopButton = transform.Find ("ShopPanel/CloseButton").GetComponent<Button> ();
         Button closeInventoryButton = transform.Find ("InventoryPanel/CloseButton").GetComponent<Button> ();
+        Button closeItemsButton = transform.Find ("InventoryPanel/ItemsPanel/CloseButton").GetComponent<Button> ();
 
+        //Окна магазина, инвентаря и предметов юзера
         GameObject shopPanel = transform.Find ("ShopPanel").gameObject;
         GameObject inventoryPanel = transform.Find ("InventoryPanel").gameObject;
+        itemsPanel = transform.Find ("InventoryPanel/ItemsPanel").gameObject;
 
+        //слушатели нажатий на кнопки
         openShopButton.onClick.AddListener (() => {
             ShowPanel (shopPanel, true);
             FindObjectOfType<Water2DScript> ().gameObject.GetComponent<SpriteRenderer> ().enabled = false;
-            ResetScrollPosition (itemsCategoryScrollRect);
-            ResetScrollPosition (itemsScrollRect);
+            ResetScrollPosition (shopItemsCategoryScrollRect);
+            ResetScrollPosition (shopItemsScrollRect);
             FindObjectOfType<ShopManager> ().OnOpenShop ();
         });
         closeShopButton.onClick.AddListener (() => {
@@ -39,6 +46,11 @@ public class GameUI : MonoBehaviour {
         closeInventoryButton.onClick.AddListener (() => {
             FindObjectOfType<InventoryManager> ().OnCloseInventory ();
             ShowPanel (inventoryPanel, false);
+        });
+
+        closeItemsButton.onClick.AddListener (() => {
+            FindObjectOfType<InventoryManager> ().OnCloseItems ();
+            ShowPanel (itemsPanel, false);
         });
     }
 
@@ -63,5 +75,10 @@ public class GameUI : MonoBehaviour {
         else
             loadingGameObject.SetActive (false);
 
+    }
+
+    public void OpenItemsPanel (int id) {
+        ShowPanel (itemsPanel, true);
+        FindObjectOfType<InventoryManager> ().OnOpenItems (id);
     }
 }

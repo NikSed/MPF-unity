@@ -22,6 +22,14 @@ public class UserManager : MonoBehaviour {
     public int[] GetItems (string category) {
         int[] array = null;
         switch (category) {
+            case "baits":
+                {
+                    array = new int[user.baits.Length];
+                    for (int i = 0; i < array.Length; i++) {
+                        array[i] = user.baits[i].id;
+                    }
+                }
+                break;
             case "rods":
                 {
                     array = user.rodsID;

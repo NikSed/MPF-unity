@@ -454,6 +454,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetFrameRate: 60
+  vSync: 0
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0
@@ -2036,6 +2037,14 @@ MonoBehaviour:
     reels: []
     lines: []
     locations: []
+  categories:
+  - baits
+  - rods
+  - spinnings
+  - feeders
+  - reels
+  - lines
+  - equipments
   rodsSprite:
   - {fileID: 1062787549911245271, guid: e1110915f8a206e418359bc3359823fd, type: 3}
   - {fileID: 451931626397537758, guid: e1110915f8a206e418359bc3359823fd, type: 3}
