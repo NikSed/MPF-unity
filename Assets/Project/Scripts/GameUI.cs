@@ -24,17 +24,20 @@ public class GameUI : MonoBehaviour {
             FindObjectOfType<Water2DScript> ().gameObject.GetComponent<SpriteRenderer> ().enabled = false;
             ResetScrollPosition (itemsCategoryScrollRect);
             ResetScrollPosition (itemsScrollRect);
-            FindObjectOfType<ShopManager>().OnOpenShopPanel ();
-        });
-        openInventoryButton.onClick.AddListener (() => {
-            ShowPanel (inventoryPanel, true);
+            FindObjectOfType<ShopManager> ().OnOpenShop ();
         });
         closeShopButton.onClick.AddListener (() => {
             FindObjectOfType<Water2DScript> ().gameObject.GetComponent<SpriteRenderer> ().enabled = true;
-            FindObjectOfType<ShopManager>().OnCloseShopPanel ();
+            FindObjectOfType<ShopManager> ().OnCloseShop ();
             ShowPanel (shopPanel, false);
         });
+
+        openInventoryButton.onClick.AddListener (() => {
+            ShowPanel (inventoryPanel, true);
+            FindObjectOfType<InventoryManager> ().OnOpenInventory ();
+        });
         closeInventoryButton.onClick.AddListener (() => {
+            FindObjectOfType<InventoryManager> ().OnCloseInventory ();
             ShowPanel (inventoryPanel, false);
         });
     }

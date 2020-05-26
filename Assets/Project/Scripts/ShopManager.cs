@@ -3,7 +3,6 @@ using UnityEngine.UI;
 
 public class ShopManager : MonoBehaviour {
     public string[] categoriesName = new string[] { "Наживки", "Удочки", "Спиннинги", "Донки", "Катушки", "Лески", "Снаряжение" };
-    public string[] categories = new string[] { "baits", "rods", "spinnings", "feeders", "reels", "lines", "equipments" };
     public GameObject shopItemPrefab;
     public GameObject categoryButtonPrefab;
 
@@ -14,19 +13,15 @@ public class ShopManager : MonoBehaviour {
     private int[] userItems;
     private Sprite[] currentItemsImages;
 
-    void Start () {
-
-    }
-
     //Метод выводит категорию предметов при открытии окна магазина
-    public void OnOpenShopPanel () {
+    public void OnOpenShop () {
         categoryButtonContainer = gameObject.transform.Find ("ItemsCategoryScrollView/Viewport/Content");
         shopItemContainer = gameObject.transform.Find ("ItemsScrollView/Viewport/Content");
         InitCategoryButtons ();
         categoryButtonContainer.transform.GetChild (0).GetComponent<Button> ().interactable = false;
         InitShopItems ("baits");
     }
-    public void OnCloseShopPanel () {
+    public void OnCloseShop () {
         foreach (Transform t in categoryButtonContainer) {
             Destroy (t.gameObject);
         }
@@ -62,7 +57,7 @@ public class ShopManager : MonoBehaviour {
                     t.GetComponent<Button> ().interactable = true;
                     view.button.interactable = false;
                 }
-                InitShopItems (categories[model.id]);
+                InitShopItems (ItemsManager.instance.categories[model.id]);
             }
         });
     }

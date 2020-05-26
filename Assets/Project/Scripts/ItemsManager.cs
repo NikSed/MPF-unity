@@ -3,6 +3,7 @@
 public class ItemsManager : MonoBehaviour {
     public static ItemsManager instance;
     public Items items;
+    public string[] categories = new string[] { "baits", "rods", "spinnings", "feeders", "reels", "lines", "equipments" };
     public Sprite[] rodsSprite;
     public Sprite[] usingRodsSprite;
     public Sprite[] spinningsSprite;
