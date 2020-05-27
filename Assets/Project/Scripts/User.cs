@@ -25,7 +25,7 @@ public class UserBaits {
 [Serializable]
 public class UserSlot {
     public int rodID;
+    public int baitID;
     public int reelID;
     public int lineID;
-    public int baitID;
 }

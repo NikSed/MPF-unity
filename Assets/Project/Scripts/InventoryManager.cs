@@ -9,6 +9,31 @@ public class InventoryManager : MonoBehaviour {
     private int[] userItems;
     private Sprite[] currentItemsImages;
     private int currentSlotID = 0;
+    public UserSlot[] currentSlotsID;
+
+    private void Start () {
+        var userSlot = UserManager.instance.user.slots;
+        currentSlotsID = new UserSlot[userSlot.Length];
+
+        for (int i = 0; i < currentSlotsID.Length; i++) {
+            currentSlotsID[i] = new UserSlot ();
+            currentSlotsID[i].rodID = userSlot[i].rodID;
+            currentSlotsID[i].baitID = userSlot[i].baitID;
+            currentSlotsID[i].reelID = userSlot[i].reelID;
+            currentSlotsID[i].lineID = userSlot[i].lineID;
+        }
+
+    }
+
+    private bool CheckArrayEquals (UserSlot[] array1, UserSlot[] array2) {
+        for (int i = 0; i < array1.Length; i++) {
+            if (array1[i].baitID != array2[i].baitID) return false;
+            if (array1[i].rodID != array2[i].rodID) return false;
+            if (array1[i].reelID != array2[i].reelID) return false;
+            if (array1[i].lineID != array2[i].lineID) return false;
+        }
+        return true;
+    }
 
     public void OnOpenInventory () {
         InitInventorySlots ();
@@ -23,6 +48,12 @@ public class InventoryManager : MonoBehaviour {
         InitItems (itemCategoryID);
     }
     public void OnCloseItems () {
+        if (!CheckArrayEquals (currentSlotsID, UserManager.instance.user.slots)) {
+            Debug.Log ("false");
+            FindObjectOfType<GameUI> ().ChangeSaveSlotsButtonInteractabl (true);
+        } else {
+            FindObjectOfType<GameUI> ().ChangeSaveSlotsButtonInteractabl (false);
+        }
         foreach (Transform t in inventoryItemtemContainer) {
             Destroy (t.gameObject);
         }

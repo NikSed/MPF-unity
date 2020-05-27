@@ -19,6 +19,7 @@ public class GameUI : MonoBehaviour {
         Button closeShopButton = transform.Find ("ShopPanel/CloseButton").GetComponent<Button> ();
         Button closeInventoryButton = transform.Find ("InventoryPanel/CloseButton").GetComponent<Button> ();
         Button closeItemsButton = transform.Find ("InventoryPanel/ItemsPanel/CloseButton").GetComponent<Button> ();
+        Button saveSlotsButton = transform.Find ("InventoryPanel/SaveSlotsButton").GetComponent<Button> ();
 
         //Окна магазина, инвентаря и предметов юзера
         GameObject shopPanel = transform.Find ("ShopPanel").gameObject;
@@ -52,6 +53,26 @@ public class GameUI : MonoBehaviour {
             FindObjectOfType<InventoryManager> ().OnCloseItems ();
             ShowPanel (itemsPanel, false);
         });
+
+        saveSlotsButton.onClick.AddListener (() => {
+            ChangeSaveSlotsButtonInteractabl (false);
+            var slots = UserManager.instance.user.slots;
+
+            string slot1 = JsonUtility.ToJson (slots[0]);
+            string slot2 = JsonUtility.ToJson (slots[1]);
+            string slot3 = JsonUtility.ToJson (slots[2]);
+
+            System.Collections.Generic.Dictionary<string, object> data = new System.Collections.Generic.Dictionary<string, object> ();
+            data["slot1"] = slot1;
+            data["slot2"] = slot2;
+            data["slot3"] = slot3;
+
+            FirebaseManager.instance.FirebaseRequest (data, "trySaveSlots")
+                .ContinueWith ((task) => {
+                    if (task.Result == "false")
+                        ChangeSaveSlotsButtonInteractabl (true);
+                });
+        });
     }
 
     private void ShowPanel (GameObject target, bool isShow) {
@@ -75,6 +96,11 @@ public class GameUI : MonoBehaviour {
         else
             loadingGameObject.SetActive (false);
 
+    }
+
+    public void ChangeSaveSlotsButtonInteractabl (bool isInteractable) {
+        Button saveSlotsButton = transform.Find ("InventoryPanel/SaveSlotsButton").GetComponent<Button> ();
+        saveSlotsButton.interactable = isInteractable;
     }
 
     public void OpenItemsPanel (int id) {
