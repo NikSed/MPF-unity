@@ -155,7 +155,7 @@ public class InventoryManager : MonoBehaviour {
         }
 
         if (userSlot.baitID > -1) {
-            view.baitInfoText.text = ItemsManager.instance.items.baits[userSlot.baitID].count.ToString () + " шт";
+            view.baitInfoText.text = UserManager.instance.user.baits[GetBaitIndex (userSlot.baitID)].count.ToString () + " шт";
             view.baitInfoText.gameObject.SetActive (true);
         }
         if (userSlot.reelID > -1) {
@@ -227,15 +227,6 @@ public class InventoryManager : MonoBehaviour {
                     }
                 }
                 break;
-            case "rods":
-                {
-                    if (userSlots[currentSlotID].rodID == itemID) {
-                        userSlots[currentSlotID].rodID = -1;
-                    } else {
-                        userSlots[currentSlotID].rodID = itemID;
-                    }
-                }
-                break;
             case "reels":
                 {
                     if (userSlots[currentSlotID].reelID == itemID) {
@@ -251,6 +242,15 @@ public class InventoryManager : MonoBehaviour {
                         userSlots[currentSlotID].lineID = -1;
                     } else {
                         userSlots[currentSlotID].lineID = itemID;
+                    }
+                }
+                break;
+            default:
+                {
+                    if (userSlots[currentSlotID].rodID == itemID) {
+                        userSlots[currentSlotID].rodID = -1;
+                    } else {
+                        userSlots[currentSlotID].rodID = itemID;
                     }
                 }
                 break;
@@ -276,14 +276,6 @@ public class InventoryManager : MonoBehaviour {
         var slots = UserManager.instance.user.slots;
 
         switch (category) {
-            case "rods":
-                {
-                    for (int i = 0; i < slots.Length; i++) {
-                        if (i == currentSlotID) continue;
-                        if (slots[i].rodID == itemID) return isContain = true;
-                    }
-                }
-                break;
             case "reels":
                 {
                     for (int i = 0; i < slots.Length; i++) {
@@ -300,6 +292,14 @@ public class InventoryManager : MonoBehaviour {
                     }
                 }
                 break;
+                // default:
+                //     {
+                //         for (int i = 0; i < slots.Length; i++) {
+                //             if (i == currentSlotID) continue;
+                //             if (slots[i].rodID == itemID) return isContain = true;
+                //         }
+                //     }
+                //     break;
         }
 
         return isContain;
@@ -309,12 +309,6 @@ public class InventoryManager : MonoBehaviour {
         string s = "Выбрать";
 
         switch (category) {
-            case "rods":
-                {
-                    if (UserManager.instance.user.slots[currentSlotID].rodID == itemID)
-                        s = "Снять";
-                }
-                break;
             case "baits":
                 {
                     if (UserManager.instance.user.slots[currentSlotID].baitID == itemID)
@@ -333,6 +327,12 @@ public class InventoryManager : MonoBehaviour {
                         s = "Снять";
                 }
                 break;
+            default:
+                {
+                    if (UserManager.instance.user.slots[currentSlotID].rodID == itemID)
+                        s = "Снять";
+                }
+                break;
         }
 
         return s;
@@ -343,7 +343,7 @@ public class InventoryManager : MonoBehaviour {
         switch (category) {
             case "baits":
                 {
-                    s = item.count + " шт";
+                    s = UserManager.instance.user.baits[GetBaitIndex (item.id)].count + " шт";
                 }
                 break;
             case "reels":
@@ -359,6 +359,14 @@ public class InventoryManager : MonoBehaviour {
         }
 
         return s;
+    }
+
+    private int GetBaitIndex (int itemID) {
+        int[] baitCount = new int[UserManager.instance.user.baits.Length];
+        for (int i = 0; i < baitCount.Length; i++) {
+            baitCount[i] = UserManager.instance.user.baits[i].id;
+        }
+        return System.Array.IndexOf (baitCount, itemID);
     }
     private Image RodImageRecize (Image target, string category) {
         Image image = null;
