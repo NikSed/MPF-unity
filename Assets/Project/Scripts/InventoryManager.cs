@@ -10,6 +10,7 @@ public class InventoryManager : MonoBehaviour {
     private Sprite[] currentItemsImages;
     private int currentSlotID = 0;
     public UserSlot[] currentSlotsID;
+    private bool isLoading = false;
 
     private void Start () {
         var userSlot = UserManager.instance.user.slots;
@@ -42,6 +43,41 @@ public class InventoryManager : MonoBehaviour {
         foreach (Transform t in inventorySlotContainer) {
             Destroy (t.gameObject);
         }
+    }
+    public void TrySaveSlots () {
+        StartCoroutine (Loading ());
+        FindObjectOfType<GameUI> ().ChangeSaveSlotsButtonInteractabl (false);
+        var slots = UserManager.instance.user.slots;
+
+        string slot1 = JsonUtility.ToJson (slots[0]);
+        string slot2 = JsonUtility.ToJson (slots[1]);
+        string slot3 = JsonUtility.ToJson (slots[2]);
+
+        System.Collections.Generic.Dictionary<string, object> data = new System.Collections.Generic.Dictionary<string, object> ();
+        data["slot1"] = slot1;
+        data["slot2"] = slot2;
+        data["slot3"] = slot3;
+
+        FirebaseManager.instance.FirebaseRequest (data, "trySaveSlots")
+            .ContinueWith ((task) => {
+                isLoading = false;
+                if (task.Result == "False")
+                    FindObjectOfType<GameUI> ().ChangeSaveSlotsButtonInteractabl (true);
+            });
+    }
+
+    private System.Collections.IEnumerator Loading () {
+        Debug.Log ("Coroutine start");
+        isLoading = true;
+        FindObjectOfType<GameUI> ().ShowLoadingIndicator (true);
+
+        while (isLoading) {
+            yield return null;
+        }
+
+        FindObjectOfType<GameUI> ().ShowLoadingIndicator (false);
+
+        Debug.Log ("Coroutine stop");
     }
 
     public void OnOpenItems (int itemCategoryID) {

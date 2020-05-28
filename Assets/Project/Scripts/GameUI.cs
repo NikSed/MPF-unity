@@ -55,23 +55,7 @@ public class GameUI : MonoBehaviour {
         });
 
         saveSlotsButton.onClick.AddListener (() => {
-            ChangeSaveSlotsButtonInteractabl (false);
-            var slots = UserManager.instance.user.slots;
-
-            string slot1 = JsonUtility.ToJson (slots[0]);
-            string slot2 = JsonUtility.ToJson (slots[1]);
-            string slot3 = JsonUtility.ToJson (slots[2]);
-
-            System.Collections.Generic.Dictionary<string, object> data = new System.Collections.Generic.Dictionary<string, object> ();
-            data["slot1"] = slot1;
-            data["slot2"] = slot2;
-            data["slot3"] = slot3;
-
-            FirebaseManager.instance.FirebaseRequest (data, "trySaveSlots")
-                .ContinueWith ((task) => {
-                    if (task.Result == "false")
-                        ChangeSaveSlotsButtonInteractabl (true);
-                });
+            FindObjectOfType<InventoryManager> ().TrySaveSlots ();
         });
     }
 
