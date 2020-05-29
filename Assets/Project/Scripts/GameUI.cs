@@ -4,9 +4,10 @@ using UnityEngine.UI;
 public class GameUI : MonoBehaviour {
     private GameObject loadingGameObject;
     private GameObject itemsPanel;
+    private GameObject locationsPanel;
 
     void Start () {
-        //Объект загрузки
+        //Анимация загрузки
         loadingGameObject = transform.Find ("LoadingGameObject").gameObject;
 
         //Ректтрансформы скролов магазина и кнопок категорий
@@ -16,14 +17,17 @@ public class GameUI : MonoBehaviour {
         //Кнопки открытия/закрытия окон
         Button openShopButton = transform.Find ("OpenShopButton").GetComponent<Button> ();
         Button openInventoryButton = transform.Find ("OpenInventoryButton").GetComponent<Button> ();
+        Button openLocationsButton = transform.Find ("OpenLocationsButton").GetComponent<Button> ();
         Button closeShopButton = transform.Find ("ShopPanel/CloseButton").GetComponent<Button> ();
         Button closeInventoryButton = transform.Find ("InventoryPanel/CloseButton").GetComponent<Button> ();
         Button closeItemsButton = transform.Find ("InventoryPanel/ItemsPanel/CloseButton").GetComponent<Button> ();
+        Button closeLocationsButton = transform.Find ("LocationsPanel/CloseButton").GetComponent<Button> ();
         Button saveSlotsButton = transform.Find ("InventoryPanel/SaveSlotsButton").GetComponent<Button> ();
 
         //Окна магазина, инвентаря и предметов юзера
         GameObject shopPanel = transform.Find ("ShopPanel").gameObject;
         GameObject inventoryPanel = transform.Find ("InventoryPanel").gameObject;
+        locationsPanel = transform.Find ("LocationsPanel").gameObject;
         itemsPanel = transform.Find ("InventoryPanel/ItemsPanel").gameObject;
 
         //слушатели нажатий на кнопки
@@ -54,9 +58,18 @@ public class GameUI : MonoBehaviour {
             ShowPanel (itemsPanel, false);
         });
 
+        openLocationsButton.onClick.AddListener (() => {
+            ShowPanel (locationsPanel, true);
+            FindObjectOfType<LocationsManager> ().OnOpenLocations ();
+        });
+        closeLocationsButton.onClick.AddListener (() => {
+            OnCloseLocationsButtonClick ();
+        });
+
         saveSlotsButton.onClick.AddListener (() => {
             FindObjectOfType<InventoryManager> ().TrySaveSlots ();
         });
+
     }
 
     private void ShowPanel (GameObject target, bool isShow) {
@@ -91,4 +104,10 @@ public class GameUI : MonoBehaviour {
         ShowPanel (itemsPanel, true);
         FindObjectOfType<InventoryManager> ().OnOpenItems (id);
     }
+
+    public void OnCloseLocationsButtonClick () {
+        FindObjectOfType<LocationsManager> ().OnCloseLocations ();
+        ShowPanel (locationsPanel, false);
+    }
+
 }
