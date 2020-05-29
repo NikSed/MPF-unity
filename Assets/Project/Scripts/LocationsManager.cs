@@ -8,6 +8,7 @@ public class LocationsManager : MonoBehaviour {
 
     private Transform locationPreviewContainer;
     private int[] userLocationsID;
+    private bool isLoading = false;
 
     public void OnOpenLocations () {
         InitLocations ();
@@ -69,8 +70,36 @@ public class LocationsManager : MonoBehaviour {
             LoadSelectedLocation (locationID);
             FindObjectOfType<GameUI> ().OnCloseLocationsButtonClick ();
         } else {
+            if (canUnlock) {
+                StartCoroutine (Loading ());
+                System.Collections.Generic.Dictionary<string, object> data = new System.Collections.Generic.Dictionary<string, object> ();
+                data["locationID"] = locationID;
+
+                FirebaseManager.instance.FirebaseRequest (data, "tryLocationUnlock")
+                    .ContinueWith ((task) => {
+                        isLoading = false;
+                        if (task.Result == "True") {
+                            var locations = UserManager.instance.user.locationsID;
+                            int newSize = locations.Length + 1;
+                            System.Array.Resize (ref locations, newSize);
+                            locations[newSize - 1] = locationID;
+                        }
+                    });
+            }
 
         }
+    }
+
+    private System.Collections.IEnumerator Loading () {
+        Debug.Log ("Coroutine start");
+        isLoading = true;
+        FindObjectOfType<GameUI> ().ShowLoadingIndicator (true);
+        while (isLoading) {
+            yield return null;
+        }
+        FindObjectOfType<GameUI> ().ShowLoadingIndicator (false);
+
+        Debug.Log ("Coroutine stop");
     }
 
     private void LoadSelectedLocation (int locationID) {

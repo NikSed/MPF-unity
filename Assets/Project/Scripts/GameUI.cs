@@ -59,8 +59,7 @@ public class GameUI : MonoBehaviour {
         });
 
         openLocationsButton.onClick.AddListener (() => {
-            ShowPanel (locationsPanel, true);
-            FindObjectOfType<LocationsManager> ().OnOpenLocations ();
+            OnOpenLocationsButtonClick ();
         });
         closeLocationsButton.onClick.AddListener (() => {
             OnCloseLocationsButtonClick ();
@@ -108,6 +107,11 @@ public class GameUI : MonoBehaviour {
     public void OnCloseLocationsButtonClick () {
         FindObjectOfType<LocationsManager> ().OnCloseLocations ();
         ShowPanel (locationsPanel, false);
+    }
+
+    public void OnOpenLocationsButtonClick () {
+        ShowPanel (locationsPanel, true);
+        FindObjectOfType<LocationsManager> ().OnOpenLocations ();
     }
 
 }
